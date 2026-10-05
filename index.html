@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
+        <title>SignalDesk AI Assistant</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root{--ink:#f5f2ff;--mut:rgba(224,220,255,.66);--gl:rgba(255,255,255,.06);--gl2:rgba(255,255,255,.11);--edge:rgba(255,255,255,.17);--pos:#5ee0a0;--neg:#ff7189;--warn:#ffb85c;--acc:#8ab4ff;--neu:#b4bdd2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+            html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+            *{box-sizing:border-box}
+            [hidden]{display:none!important}
+            body{margin:0;min-height:100%;color:var(--ink);font:14px/1.5 Inter,"SF Pro Display",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:#090820;
+            background-image:radial-gradient(620px 440px at 10% 6%,rgba(112,56,210,.44),transparent 70%),radial-gradient(540px 400px at 94% 4%,rgba(40,90,230,.34),transparent 70%),radial-gradient(560px 440px at 50% 50%,rgba(120,70,220,.30),transparent 70%),radial-gradient(500px 380px at 2% 98%,rgba(20,170,190,.26),transparent 70%),radial-gradient(540px 400px at 100% 100%,rgba(50,80,230,.30),transparent 70%),linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+            background-size:auto,auto,auto,auto,auto,44px 44px,44px 44px;background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,no-repeat,repeat,repeat}
+            button{font:inherit;color:inherit}
+            .stage{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px}
+            .ttl{margin:0 0 12px;font-size:15px;font-weight:700;letter-spacing:.34em;text-transform:uppercase;text-align:center}
+            .sub{margin:0 0 28px;color:var(--mut);font-size:15px;letter-spacing:.06em;text-align:center}
+            .panel{position:relative;width:100%;max-width:880px;padding:22px;border-radius:28px;background:var(--gl);border:1px solid var(--edge);-webkit-backdrop-filter:blur(26px) saturate(150%);backdrop-filter:blur(26px) saturate(150%);box-shadow:0 30px 90px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.14)}
+            .ph{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+            .av{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--gl2);border:1px solid var(--edge)}
+            .who{flex:1;display:flex;flex-direction:column;line-height:1.25}.who b{font-size:14px}.who span{font-size:11px;color:var(--mut)}
+            .pill{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:99px;background:var(--gl);border:1px solid var(--edge);font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+            .pill svg{transition:transform .2s}.pill[aria-expanded=true] svg{transform:rotate(180deg)}
+            .dot{width:7px;height:7px;border-radius:50%;background:var(--pos);box-shadow:0 0 8px var(--pos)}
+            .ic{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--gl);border:1px solid var(--edge);cursor:pointer;padding:0}
+            .pop{position:absolute;top:72px;right:22px;z-index:5;max-width:250px;padding:12px 14px;border-radius:14px;background:rgba(26,22,62,.94);border:1px solid var(--edge);font-size:12px;color:var(--mut)}
+            .msgs{position:relative;max-height:min(50vh,440px);overflow-y:auto;margin:0 -6px 16px;padding:0 6px;display:flex;flex-direction:column;gap:14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.25) transparent}
+            .m{display:flex;gap:10px;animation:in .25s ease-out}
+            .m.user{justify-content:flex-end}
+            .m.user .bd{background:linear-gradient(135deg,rgba(138,110,255,.52),rgba(70,110,255,.44));border:1px solid var(--edge);border-radius:18px 18px 4px 18px;padding:9px 14px;max-width:82%;white-space:pre-wrap;overflow-wrap:anywhere}
+            .m.bot .bd{flex:1;min-width:0}
+            .mav{flex:none;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;background:var(--gl2);border:1px solid var(--edge)}
+            @keyframes in{from{opacity:0;transform:translateY(6px)}}
+            @keyframes bl{50%{opacity:.25;transform:translateY(-3px)}}
+            @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+            .lead{margin:3px 0 10px}.dim{color:var(--mut)}
+            .it{margin:0 0 8px;padding:11px 14px 11px 16px;border-radius:14px;background:var(--gl);border:1px solid var(--edge);border-left:3px solid var(--rail,var(--edge))}
+            .it p{margin:0 0 8px;overflow-wrap:anywhere}.it small{color:var(--mut);font-size:12px}.it>small:first-child{display:block;margin-bottom:6px}
+            .tags,.sg{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sg{margin-top:8px}
+            .sg em{font-style:normal;font-size:11px;color:var(--mut);padding:1px 8px;border-radius:99px;background:var(--gl);border:1px solid var(--edge)}
+            .b{display:inline-block;padding:1px 9px;border:1px solid currentColor;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+            .tg{font-size:12px;padding:1px 9px;border-radius:99px;background:var(--gl2)}
+            .pos{color:var(--pos)}.neg{color:var(--neg)}.neu{color:var(--neu)}.p1{color:var(--neg)}.p2{color:var(--warn)}.p3{color:var(--acc)}.p4{color:var(--pos)}.cap{text-transform:capitalize}
+            blockquote{margin:0 0 8px;padding:8px 12px;border-radius:10px;background:var(--gl2);border-left:2px solid var(--acc)}
+            .lnk{background:none;border:0;padding:2px 0;color:var(--acc);font-size:12px;font-weight:600;cursor:pointer}
+            .kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:8px}
+            .kp div{padding:10px 12px;border-radius:14px;background:var(--gl);border:1px solid var(--edge)}.kp b{display:block;font-size:22px;line-height:1.15}.kp span{font-size:12px;color:var(--mut)}
+            .row{display:grid;grid-template-columns:130px 1fr 26px;gap:10px;align-items:center;font-size:12px;margin:6px 0}
+            .bar{height:6px;border-radius:3px;background:var(--gl2);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#8a6eff,#4a8bff)}
+            .stack{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:2px 0 6px;background:var(--gl2)}.stack i{display:block;height:100%}
+            .dots{display:inline-flex;gap:4px;padding:9px 2px}.dots i{width:6px;height:6px;border-radius:50%;background:var(--mut);animation:bl 1s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+            .in{display:flex;align-items:flex-end;gap:10px;padding:10px 10px 10px 16px;border-radius:22px;background:var(--gl);border:1px solid var(--edge);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+            .in:focus-within{border-color:rgba(160,150,255,.7);box-shadow:0 0 0 3px rgba(130,110,255,.22)}
+            .in svg.s{flex:none;margin-bottom:9px;opacity:.85}
+            textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:none;color:var(--ink);font:inherit;font-size:15px;line-height:22px;padding:7px 0;max-height:120px}
+            textarea::placeholder{color:var(--mut)}
+            .send{width:36px;height:36px;border-radius:50%;border:0;background:#fff;color:#14112e;display:grid;place-items:center;cursor:pointer;padding:0;flex:none}
+            .in .ic{flex:none;width:36px;height:36px}
+            .qh{display:flex;justify-content:space-between;align-items:center;margin:18px 2px 10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:600}
+            .qh .lnk{letter-spacing:.03em;text-transform:none;font-size:12px}
+            .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+            @media (max-width:760px){.qa{grid-template-columns:repeat(2,1fr)}.ttl{letter-spacing:.2em}}
+            .qa button{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;text-align:left;background:var(--gl);border:1px solid var(--edge);cursor:pointer;transition:background .15s}
+            .qa button:hover{background:var(--gl2)}
+            .qa button[aria-pressed=true]{background:rgba(255,255,255,.17);border-color:rgba(255,255,255,.36)}
+            .qi{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:#fff}
+            .qa b{display:block;font-size:13px;line-height:1.2}.qa span{font-size:10.5px;color:var(--mut)}
+            button:focus-visible{outline:2px solid #b9a8ff;outline-offset:2px}
+            .tst{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);padding:8px 16px;border-radius:99px;background:rgba(26,22,62,.95);border:1px solid var(--edge);font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}.tst.on{opacity:1}
+        </style>
+    </head>
+    <body>
+        <main class="stage">
+            <h1 class="ttl">SignalDesk · AI Assistant</h1>
+            <p class="sub">What can I help you with today?</p>
+            <section class="panel" aria-label="SignalDesk AI assistant">
+                <header class="ph">
+                    <div class="av">
+                        <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="#fff"
+                        >
+                            <path
+                                d="M11 2l2 6.5L19.5 10.5 13 12.5 11 19l-2-6.5L2.5 10.5 9 8.5z"
+                            />
+                            <path
+                                d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"
+                            />
+                        </svg>
+                    </div>
+                    <div class="who">
+                        <b>SignalDesk</b><span>Online · v1.0</span>
+                    </div>
+                    <button
+                        class="pill"
+                        id="pill"
+                        aria-expanded="false"
+                        aria-controls="pop"
+                    >
+                        <i class="dot"></i>Local · Private<svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.4"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </button>
+                    <button class="ic" id="clr" aria-label="Clear conversation">
+                        <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.2"
+                            stroke-linecap="round"
+                        >
+                            <path d="M6 6l12 12M18 6L6 18" />
+                        </svg>
+                    </button>
+                    <div class="pop" id="pop" hidden>
+                        Runs entirely in your browser. Your messages never leave
+                        this device.
+                    </div>
+                </header>
+                <div
+                    class="msgs"
+                    id="msgs"
+                    role="log"
+                    aria-live="polite"
+                    hidden
+                ></div>
+                <form class="in" id="frm">
+                    <svg
+                        class="s"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                    >
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="M20 20l-3.5-3.5" />
+                    </svg>
+                    <textarea
+                        id="q"
+                        rows="1"
+                        aria-label="Customer feedback, one message per line"
+                        placeholder="Paste customer feedback, one message per line"
+                        spellcheck="false"
+                    ></textarea>
+                    <button
+                        type="button"
+                        class="ic"
+                        id="att"
+                        aria-label="Open a .txt or .csv file"
+                    >
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path
+                                d="M21 11l-8.5 8.5a5 5 0 01-7-7L14 4a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.7 1.7 0 01-2.4-2.4L15 7"
+                            />
+                        </svg>
+                    </button>
+                    <input
+                        type="file"
+                        id="file"
+                        accept=".txt,.csv,text/plain"
+                        hidden
+                    />
+                    <button type="submit" class="send" aria-label="Send">
+                        <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.4"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <path d="M5 12h14M13 6l6 6-6 6" />
+                        </svg>
+                    </button>
+                </form>
+                <div class="qh">
+                    <span>Quick actions</span
+                    ><button type="button" class="lnk" id="smp">
+                        Try sample data
+                    </button>
+                </div>
+                <div class="qa" id="qa">
+                    <button type="button" data-m="analyze" aria-pressed="true">
+                        <i
+                            class="qi"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    #ff6aa8,
+                                    #f0408a
+                                );
+                            "
+                            ><svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.4"
+                                stroke-linecap="round"
+                            >
+                                <path d="M6 20V11M12 20V5M18 20v-6" /></svg
+                        ></i>
+                        <div>
+                            <b>Analyze</b><span>Sentiment &amp; emotion</span>
+                        </div>
+                    </button>
+                    <button type="button" data-m="triage" aria-pressed="false">
+                        <i
+                            class="qi"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    #a37bff,
+                                    #7a4dff
+                                );
+                            "
+                            ><svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.4"
+                                stroke-linecap="round"
+                            >
+                                <path d="M4 7h16M4 12h11M4 17h6" /></svg
+                        ></i>
+                        <div><b>Triage</b><span>Priority queue</span></div>
+                    </button>
+                    <button type="button" data-m="reply" aria-pressed="false">
+                        <i
+                            class="qi"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    #46a6ff,
+                                    #2f6bff
+                                );
+                            "
+                            ><svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.2"
+                                stroke-linejoin="round"
+                            >
+                                <path d="M4 5h16v11H9l-5 4z" /></svg
+                        ></i>
+                        <div><b>Reply</b><span>Draft responses</span></div>
+                    </button>
+                    <button
+                        type="button"
+                        data-m="summarize"
+                        aria-pressed="false"
+                    >
+                        <i
+                            class="qi"
+                            style="
+                                background: linear-gradient(
+                                    135deg,
+                                    #1fdcaa,
+                                    #10b981
+                                );
+                            "
+                            ><svg
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.4"
+                                stroke-linecap="round"
+                            >
+                                <path d="M5 6h14M5 11h14M5 16h9" /></svg
+                        ></i>
+                        <div><b>Summarize</b><span>Batch insights</span></div>
+                    </button>
+                </div>
+            </section>
+        </main>
+        <div class="tst" id="tst" role="status"></div>
+        <script>
+            const $=s=>document.querySelector(s),has=(o,k)=>Object.prototype.hasOwnProperty.call(o,k);
+            const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+            const mk=(s,v,o={})=>{s.split(' ').forEach(w=>o[w]=v);return o};
+            const L={};
+            mk('fine',0.5,L);
+            mk('good nice fast quick easy works thanks thank smooth reliable',1.5,L);
+            mk('great helpful friendly happy satisfied recommend love loved best solved',2.5,L);
+            mk('excellent amazing awesome perfect fantastic outstanding wonderful',3.5,L);
+            mk('slow late waiting missing issue issues problem problems delay confusing expensive worried',-1.5,L);
+            mk('bad poor wrong error fail failed fails bug bugs crash crashes crashed stuck laggy unresponsive disappointed disappointing annoying delayed lost overpriced charged cracked damaged',-2.5,L);
+            mk('terrible awful worst hate horrible useless broken defective rude scam unacceptable frustrating frustrated furious angry ignored',-3.5,L);
+            const grp=g=>{const o={};Object.entries(g).forEach(([k,s])=>s.split(' ').forEach(w=>o[w]=k));return o};
+            const E=grp({joy:'love loved great amazing happy thanks thank awesome perfect fantastic excellent delighted pleased glad wonderful',
+            anger:'angry furious terrible awful unacceptable rude hate worst scam ridiculous horrible outrageous frustrating frustrated annoying ignored',
+            sadness:'disappointed disappointing sad unhappy sorry upset regret',
+            fear:'worried afraid concerned scared unsafe dangerous hacked fraud unauthorized security',
+            surprise:'wow surprised unexpected shocked unbelievable'});
+            const T=grp({'Billing & Payments':'charged charge billing invoice refund payment paid subscription price pricing overcharged card fee fees cancel renewal',
+            'Shipping & Delivery':'delivery delivered shipping shipped package courier arrived tracking parcel order late delayed',
+            'Product Quality':'broken damaged defective quality cracked faulty material battery size scratched',
+            'App & Technical':'app crash crashes crashed bug bugs error login loading update website password laggy freeze server',
+            'Customer Support':'support agent representative staff service rude helpful response replied ticket chat ignored call'});
+            const TEAM={'Billing & Payments':'Billing','Shipping & Delivery':'Logistics','Product Quality':'Quality and Returns','App & Technical':'Engineering','Customer Support':'Support QA','General':'Customer Success'};
+            const NEG=new Set(['not','no','never','without','hardly','cannot']),INT=new Set(['very','really','extremely','so','totally','absolutely','incredibly']);
+            const URG=new Set(['urgent','asap','immediately','emergency','unsafe','dangerous','fraud','hacked','unauthorized','lawyer','legal','chargeback','escalate','cancel','refund']);
+            const LBL={pos:'Positive',neg:'Negative',neu:'Neutral'},PL=['','P1 Critical','P2 High','P3 Normal','P4 Low'];
+            const RAIL=['','var(--neg)','var(--warn)','var(--acc)','var(--pos)'];
+            const SAMPLE=["Absolutely love the new update, the app is fast and super easy to use!",
+            "I was charged twice for my subscription and nobody has replied to my ticket. This is unacceptable, I want a refund immediately!",
+            "Package arrived three days late and the box was damaged.",
+            "The app crashes every time I try to log in. Please fix this ASAP, I cannot work.",
+            "Support agent Maria was friendly and solved my problem in minutes. Thank you!",
+            "Delivery was fine, nothing special.",
+            "I'm worried someone hacked my account, there are unauthorized payments on my card. URGENT!!",
+            "The battery quality is poor and the screen cracked after a week. Very disappointed.",
+            "Great price and excellent quality, would recommend to anyone.",
+            "Wow, I did not expect the checkout to be this smooth. No problems at all."];
+            function analyze(t){
+             const tk=t.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g)||[];
+             let sum=0,neg=0,boost=1,sig=[],emo={joy:0,anger:0,sadness:0,fear:0,surprise:0},top={},u=0;
+             tk.forEach(w=>{
+              if(NEG.has(w)||/n't$/.test(w)){neg=3;return}
+              if(INT.has(w)){boost=1.5;return}
+              if(has(L,w)){sum+=L[w]*boost*(neg>0?-0.8:1);sig.push((neg>0?'not ':'')+w)}
+              if(has(E,w)&&neg===0)emo[E[w]]++;
+              if(has(T,w))top[T[w]]=(top[T[w]]||0)+1;
+              if(URG.has(w))u+=2;
+              boost=1;if(neg>0)neg--;
+             });
+             const c=Math.tanh(sum/4),sl=c>0.15?'pos':c<-0.15?'neg':'neu';
+             u+=Math.min((t.match(/!/g)||[]).length,2);
+             if((t.match(/\b[A-Z]{3,}\b/g)||[]).length>=2)u++;
+             if(c<-0.6)u+=2;else if(c<-0.3)u++;
+             let em=Object.entries(emo).sort((a,b)=>b[1]-a[1])[0];em=em[1]>0?em[0]:'neutral';
+             let tp=Object.entries(top).sort((a,b)=>b[1]-a[1])[0];tp=tp?tp[0]:'General';
+             let pri;
+             if(sl==='neg')pri=u>=5?1:(u>=3||c<-0.6)?2:3;else if(sl==='neu')pri=u>=3?2:3;else pri=4;
+             const team=TEAM[tp],act=['','Escalate to '+team+' now (target: 1 hour)','Route to '+team+' (target: 4 hours)','Reply within 24 hours ('+team+')','Thank the customer and invite a review'][pri];
+             return{t,c,sl,em,tp,pri,sig:[...new Set(sig)],act};
+            }
+
+            const cnt=a=>a.reduce((o,x)=>(o[x]=(o[x]||0)+1,o),{}),srt=o=>Object.entries(o).sort((a,b)=>b[1]-a[1]),sg=c=>(c>0?'+':'')+c.toFixed(2);
+            const MN={analyze:'Analyze',triage:'Triage',reply:'Reply',summarize:'Summarize'};
+            const FIX={'Billing & Payments':"I've asked our billing team to review your account and confirm any correction in writing.",'Shipping & Delivery':"I've asked our logistics team to check your order and send you an updated delivery date.",'Product Quality':"Our returns team will review the details so we can arrange a replacement or refund.",'App & Technical':"Our engineers are investigating and I'll update you as soon as there is a fix.",'Customer Support':"I've shared your feedback with our support lead so it is handled properly.",General:"I've passed your message to the right team."};
+            const rep=r=>r.sl==='pos'?"Thank you for the kind words. We're glad it worked well for you, and a short review would help others find us.":(r.sl==='neg'?"I'm sorry about your experience. ":"Thanks for getting in touch. ")+FIX[r.tp]+(r.pri<=2?" You will hear from us within "+(r.pri===1?"1 hour":"4 hours")+".":" We will reply within 24 hours.");
+            const SP='<svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M11 2l2 6.5L19.5 10.5 13 12.5 11 19l-2-6.5L2.5 10.5 9 8.5z"/></svg>';
+            const DOTS='<span class="dots"><i></i><i></i><i></i></span>',SHOW=25;
+            let mode='analyze',last=null,RR=[],busy=false,tmr;
+            const msgs=$('#msgs'),q=$('#q');
+            const byPri=R=>[...R].sort((a,b)=>a.pri-b.pri||a.c-b.c);
+            function toast(t){const e=$('#tst');e.textContent=t;e.classList.add('on');clearTimeout(tmr);tmr=setTimeout(()=>e.classList.remove('on'),2200)}
+            function copy(t){
+             const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}a.remove();toast(ok?'Copied to clipboard':'Copy was blocked by your browser')};
+             if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('Copied to clipboard'),fb);else fb();
+            }
+            function csv(){const z=s=>'"'+String(s).replace(/"/g,'""')+'"';return ['Message,Sentiment,Score,Emotion,Topic,Priority,Action'].concat(byPri(RR).map(r=>[r.t,LBL[r.sl],r.c.toFixed(2),r.em,r.tp,PL[r.pri],r.act].map(z).join(','))).join('\n')}
+            function item(r,m){
+             const rail=`style="--rail:${RAIL[r.pri]}"`;
+             if(m==='triage')return `<div class="it" ${rail}><div class="tags"><span class="b p${r.pri}">${PL[r.pri]}</span><span class="tg">${esc(r.tp)}</span></div><p style="margin-top:8px">${esc(r.t)}</p><small>${esc(r.act)}</small></div>`;
+             if(m==='reply')return `<div class="it" ${rail}><p class="dim">${esc(r.t)}</p><blockquote>${esc(rep(r))}</blockquote><button class="lnk" data-c="${esc(rep(r))}">Copy reply</button></div>`;
+             const sig=r.sig.slice(0,4).map(s=>`<em>${esc(s)}</em>`).join('');
+             return `<div class="it" ${rail}><p>${esc(r.t)}</p><div class="tags"><span class="b ${r.sl}">${LBL[r.sl]} ${sg(r.c)}</span><span class="tg cap">${r.em}</span><span class="tg">${esc(r.tp)}</span><span class="b p${r.pri}">${PL[r.pri]}</span></div>${sig?`<div class="sg">${sig}</div>`:''}</div>`;
+            }
+            function sum(R){
+             const n=R.length,sc=cnt(R.map(r=>r.sl)),avg=R.reduce((s,r)=>s+r.c,0)/n,att=R.filter(r=>r.pri<=2).length;
+             const tp=srt(cnt(R.map(r=>r.tp))),em=srt(cnt(R.map(r=>r.em))),nt=srt(cnt(R.filter(r=>r.sl==='neg').map(r=>r.tp)))[0];
+             const tone=avg>0.15?'positive':avg<-0.15?'negative':'neutral';
+             const lead=`${n} message${n>1?'s':''} analyzed. Overall sentiment is ${tone}, and ${att} need${att===1?'s':''} attention now.`+(nt?` The most common complaint is ${nt[0]==='General'?'unspecified issues':esc(nt[0]).toLowerCase()} (${nt[1]} negative).`:'');
+             const bars=a=>a.map(([k,v])=>`<div class="row"><span class="cap">${esc(k)}</span><div class="bar"><i style="width:${v/n*100}%"></i></div><b>${v}</b></div>`).join('');
+             const seg=[['pos','var(--pos)'],['neu','var(--neu)'],['neg','var(--neg)']];
+             return `<p class="lead">${lead}</p><div class="kp">${[[n,'Messages'],[sg(avg),'Avg sentiment'],[Math.round((sc.neg||0)/n*100)+'%','Negative'],[att,'Need attention']].map(k=>`<div><b>${k[0]}</b><span>${k[1]}</span></div>`).join('')}</div><div class="it"><small>Sentiment mix</small><div class="stack">${seg.map(s=>`<i style="width:${(sc[s[0]]||0)/n*100}%;background:${s[1]}"></i>`).join('')}</div></div><div class="it"><small>Topics</small>${bars(tp)}</div><div class="it"><small>Emotions</small>${bars(em)}</div><button class="lnk" data-csv>Copy results as CSV</button>`;
+            }
+            function answer(R){
+             RR=R;const n=R.length,att=R.filter(r=>r.pri<=2).length,s=n>1?'s':'';
+             if(mode==='summarize')return sum(R);
+             const lead={analyze:`Here is the analysis for ${n} message${s}.`,triage:`${n} message${s} ranked by priority. ${att} need${att===1?'s':''} attention now.`,reply:`Draft repl${n>1?'ies':'y'} for ${n} message${s}, most urgent first. Review before sending.`}[mode];
+             const list=mode==='analyze'?R:byPri(R);
+             return `<p class="lead">${lead}</p>`+list.slice(0,SHOW).map(r=>item(r,mode)).join('')+(n>SHOW?`<p class="dim">Showing ${SHOW} of ${n}. Copy the CSV for the full list.</p>`:'')+(n>1?'<button class="lnk" data-csv>Copy results as CSV</button>':'');
+            }
+            function add(role,html){
+             msgs.hidden=false;const d=document.createElement('div');d.className='m '+role;
+             d.innerHTML=(role==='bot'?`<div class="mav">${SP}</div>`:'')+`<div class="bd">${html}</div>`;
+             msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
+            }
+            function run(lines,label){
+             if(busy)return;busy=true;last=lines;
+             add('user',esc(label));const t=add('bot',DOTS);
+             setTimeout(()=>{t.querySelector('.bd').innerHTML=answer(lines.map(analyze));busy=false;msgs.scrollTop=t.previousElementSibling.offsetTop-4},550);
+            }
+            const parse=v=>v.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).slice(0,200);
+            const lab=l=>l.length>1?(l[0].length>90?l[0].slice(0,90)+'…':l[0])+`\n+ ${l.length-1} more message${l.length>2?'s':''}`:l[0];
+            function fit(){q.style.height='auto';q.style.height=Math.min(q.scrollHeight,120)+'px'}
+            function go(){const l=parse(q.value);if(!l.length){q.focus();return}if(busy)return;q.value='';fit();run(l,lab(l))}
+            $('#frm').onsubmit=e=>{e.preventDefault();go()};
+            q.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();go()}};
+            q.oninput=fit;
+            const qb=[...document.querySelectorAll('#qa button')];
+            qb.forEach(b=>b.onclick=()=>{
+             mode=b.dataset.m;qb.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+             const l=parse(q.value);
+             if(l.length){if(busy)return;q.value='';fit();run(l,lab(l))}
+             else if(last)run(last,'Show my last feedback as '+MN[mode]);
+             else{add('bot','<p class="lead">Paste some customer feedback below, one message per line, or try the sample data.</p>');q.focus()}
+            });
+            $('#smp').onclick=()=>run(SAMPLE,'Sample data\n10 customer messages');
+            $('#clr').onclick=()=>{msgs.innerHTML='';msgs.hidden=true;last=null;RR=[];busy=false;q.value='';fit();toast('Conversation cleared')};
+            const pill=$('#pill'),pop=$('#pop');
+            pill.onclick=e=>{e.stopPropagation();pop.hidden=!pop.hidden;pill.setAttribute('aria-expanded',String(!pop.hidden))};
+            document.addEventListener('click',()=>{pop.hidden=true;pill.setAttribute('aria-expanded','false')});
+            $('#att').onclick=()=>$('#file').click();
+            $('#file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{q.value=String(r.result);fit();q.focus();toast('File loaded. Press send to analyze.')};r.onerror=()=>toast('That file could not be read');r.readAsText(f);e.target.value=''};
+            msgs.onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.c)copy(b.dataset.c);else if('csv' in b.dataset)copy(csv())};
+        </script>
+    </body>
+</html>
